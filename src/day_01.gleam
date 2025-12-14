@@ -64,36 +64,33 @@ fn calculate_zeroes_touched_count(
 ) {
   case aggregates {
     Error(e) -> Error(e)
-    Ok(#(zeros_total, running_total)) -> {
+    Ok(#(zeros_total, previous_dial_location)) -> {
       use #(direction, amount) <- result.try(process_next_instruction(
         next_instruction,
       ))
 
       use #(zeros_hit, new_dial_location) <- result.try(case direction {
         "R" -> {
-          let div_total = running_total + amount
+          let div_total = previous_dial_location + amount
           Ok(#(div_total / 100, div_total % 100))
         }
         "L" -> {
-          let sub_total = running_total - amount
-          let add_negative = case running_total == 0 {
-            True -> 0
-            _ -> 1
-          }
-          case sub_total {
-            x if x < 0 -> {
-              // how many hundreds below are we
-              let hundreds = int.absolute_value(sub_total / 100)
-              // take the remainder of the divide and subtract that from 100
-              let remainder = 100 + sub_total % 100
-              Ok(#(hundreds + add_negative, remainder))
+          let zeros_hit = case previous_dial_location {
+            0 -> amount / 100
+            _ -> {
+              case amount < previous_dial_location {
+                True -> 0
+                False -> 1 + { amount - previous_dial_location } / 100
+              }
             }
-            x if x == 0 -> {
-              // if add_negative is zero it means we're going from zero to zero
-              Ok(#(add_negative, sub_total))
-            }
-            _ -> Ok(#(0, sub_total))
           }
+
+          use new_location <- result.try(result.replace_error(
+            int.modulo(previous_dial_location - amount, 100),
+            "modulo failed",
+          ))
+
+          Ok(#(zeros_hit, new_location))
         }
         _ -> {
           pp("invalid direction", direction)
@@ -113,7 +110,7 @@ fn calculate_zeroes_touched_count(
 }
 
 pub fn main() {
-  let instructions = read_list_input("01", True)
+  let instructions = read_list_input("01", False)
 
   // keep a running total
   // keep a running zero count

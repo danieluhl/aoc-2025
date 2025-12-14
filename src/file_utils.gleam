@@ -29,3 +29,11 @@ pub fn read_list_input(day: String, sample: Bool) {
   string.split(contents, on: "\n")
   |> list.filter(fn(s) { bool.negate(string.is_empty(s)) })
 }
+
+pub fn pp(label: String, output: String) {
+  io.print("\n---\n")
+  io.print(label)
+  io.print(":\n")
+  io.print(output)
+  io.print("\n")
+}

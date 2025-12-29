@@ -1,6 +1,7 @@
 import gleam/bool
 import gleam/io
 import gleam/list
+import gleam/option.{type Option, Some}
 import gleam/string
 import simplifile.{describe_error}
 
@@ -24,10 +25,19 @@ pub fn read_input(day: String, sample: Bool) {
   }
 }
 
-pub fn read_list_input(day: String, sample: Bool) {
+pub fn read_input_by_delimiter(
+  day: String,
+  sample: Bool,
+  delimiter: Option(String),
+) {
+  let del = case delimiter {
+    Some(d) -> d
+    _ -> "\n"
+  }
   let contents = read_input(day, sample)
-  string.split(contents, on: "\n")
+  string.split(contents, on: del)
   |> list.filter(fn(s) { bool.negate(string.is_empty(s)) })
+  |> list.map(fn(s) { string.trim(s) })
 }
 
 pub fn pp(label: String, output: String) {

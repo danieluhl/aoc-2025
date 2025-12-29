@@ -1,6 +1,7 @@
-import file_utils.{pp, read_list_input}
+import file_utils.{pp, read_input_by_delimiter}
 import gleam/int
 import gleam/list
+import gleam/option.{None}
 import gleam/result
 import gleam/string
 
@@ -85,10 +86,16 @@ fn calculate_zeroes_touched_count(
             }
           }
 
+          let new_location_1 =
+            int.absolute_value({ previous_dial_location - amount } % 100)
           use new_location <- result.try(result.replace_error(
             int.modulo(previous_dial_location - amount, 100),
             "modulo failed",
           ))
+
+          pp("sub", int.to_string(previous_dial_location - amount))
+          pp("new_location_1", int.to_string(new_location_1))
+          pp("new_location", int.to_string(new_location))
 
           Ok(#(zeros_hit, new_location))
         }
@@ -99,18 +106,13 @@ fn calculate_zeroes_touched_count(
         }
       })
 
-      pp("------------------", "---------------------")
-      pp("next_instruction", next_instruction)
-      pp("new_dial_location", int.to_string(new_dial_location))
-      pp("zeros_hit", int.to_string(zeros_hit))
-
       Ok(#(zeros_total + zeros_hit, new_dial_location))
     }
   }
 }
 
 pub fn main() {
-  let instructions = read_list_input("01", False)
+  let instructions = read_input_by_delimiter("01", True, None)
 
   // keep a running total
   // keep a running zero count
